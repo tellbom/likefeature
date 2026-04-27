@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "H3DAE2/lzbpjgZVciWXyiLr7e5bpD3bjT/YLCY8Iut5amgni32GE8MsU3CKrVA8YZjRUkehcdtR3CuWnvKG//g==",
+  "dgSpecHash": "QUSNI2Eb0XjosBgy1parujbJufRAfHLlUjJlLzN4X4Cd7TSAxytkF6Zcd+GGX73f3aYI9b4nR8VsdZJiVLR/3Q==",
   "success": true,
   "projectFilePath": "E:\\likeFeature\\likefeature.csproj",
   "expectedPackageFiles": [
@@ -80,16 +80,5 @@
     "C:\\Users\\24203\\.nuget\\packages\\system.threading\\4.3.0\\system.threading.4.3.0.nupkg.sha512",
     "C:\\Users\\24203\\.nuget\\packages\\system.threading.tasks\\4.3.0\\system.threading.tasks.4.3.0.nupkg.sha512"
   ],
-  "logs": [
-    {
-      "code": "NU1603",
-      "level": "Warning",
-      "warningLevel": 1,
-      "message": "likefeature 依赖于 ClickHouse.Client (>= 7.4.2)，但找不到 ClickHouse.Client 7.4.2。 已解决 ClickHouse.Client 7.5.0 的近似最佳匹配。 ",
-      "libraryId": "ClickHouse.Client",
-      "targetGraphs": [
-        "net6.0"
-      ]
-    }
-  ]
+  "logs": []
 }

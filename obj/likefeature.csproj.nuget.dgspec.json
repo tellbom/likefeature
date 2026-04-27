@@ -46,7 +46,7 @@
           "dependencies": {
             "ClickHouse.Client": {
               "target": "Package",
-              "version": "[7.4.2, )"
+              "version": "[7.5.0, )"
             },
             "NEST": {
               "target": "Package",

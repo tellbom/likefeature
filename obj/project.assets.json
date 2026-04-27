@@ -4332,7 +4332,7 @@
   },
   "projectFileDependencyGroups": {
     "net6.0": [
-      "ClickHouse.Client >= 7.4.2",
+      "ClickHouse.Client >= 7.5.0",
       "NEST >= 7.17.5",
       "StackExchange.Redis >= 2.7.33",
       "Swashbuckle.AspNetCore >= 6.5.0"
@@ -4384,7 +4384,7 @@
         "dependencies": {
           "ClickHouse.Client": {
             "target": "Package",
-            "version": "[7.4.2, )"
+            "version": "[7.5.0, )"
           },
           "NEST": {
             "target": "Package",
@@ -4421,17 +4421,5 @@
         "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.402\\RuntimeIdentifierGraph.json"
       }
     }
-  },
-  "logs": [
-    {
-      "code": "NU1603",
-      "level": "Warning",
-      "warningLevel": 1,
-      "message": "likefeature 依赖于 ClickHouse.Client (>= 7.4.2)，但找不到 ClickHouse.Client 7.4.2。 已解决 ClickHouse.Client 7.5.0 的近似最佳匹配。 ",
-      "libraryId": "ClickHouse.Client",
-      "targetGraphs": [
-        "net6.0"
-      ]
-    }
-  ]
+  }
 }
