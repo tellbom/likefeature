@@ -1,0 +1,131 @@
+openapi: 3.0.3
+info:
+  title: Likes API
+  version: 0.1.0
+paths:
+  /api/likes/toggle:
+    post:
+      summary: Toggle like state for the current development user
+      parameters:
+        - name: X-User-Id
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - newsId
+              properties:
+                newsId:
+                  type: string
+      responses:
+        "200":
+          description: Toggle succeeded in Redis
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ToggleLikeResponse"
+        "400":
+          description: Missing or invalid news ID
+        "401":
+          description: Missing development user header
+  /api/likes/status:
+    get:
+      summary: Get whether the current development user likes a news article
+      parameters:
+        - name: X-User-Id
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: newsId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Current Redis like status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LikeStatusResponse"
+        "400":
+          description: Missing or invalid news ID
+        "401":
+          description: Missing development user header
+  /api/likes/count:
+    get:
+      summary: Get current like count for a news article
+      parameters:
+        - name: newsId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Current Redis like count
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LikeCountResponse"
+        "400":
+          description: Missing or invalid news ID
+components:
+  schemas:
+    ToggleLikeResponse:
+      type: object
+      required:
+        - success
+        - newsId
+        - liked
+        - likeCount
+        - eventType
+      properties:
+        success:
+          type: boolean
+        newsId:
+          type: string
+        liked:
+          type: boolean
+        likeCount:
+          type: integer
+          minimum: 0
+        eventType:
+          type: string
+          enum:
+            - Liked
+            - Unliked
+    LikeStatusResponse:
+      type: object
+      required:
+        - success
+        - newsId
+        - liked
+      properties:
+        success:
+          type: boolean
+        newsId:
+          type: string
+        liked:
+          type: boolean
+    LikeCountResponse:
+      type: object
+      required:
+        - success
+        - newsId
+        - likeCount
+      properties:
+        success:
+          type: boolean
+        newsId:
+          type: string
+        likeCount:
+          type: integer
+          minimum: 0
