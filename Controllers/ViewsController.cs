@@ -1,10 +1,13 @@
 using likefeature.Models;
 using likefeature.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace likefeature.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("api/views")]
 public class ViewsController : ControllerBase
 {
@@ -20,9 +23,9 @@ public class ViewsController : ControllerBase
     [HttpPost("record")]
     public async Task<IActionResult> Record([FromBody] RecordViewRequest request)
     {
-        var userId = Request.Headers["X-User-Id"].FirstOrDefault();
+        var userId = GetCurrentUserId();
         if (string.IsNullOrWhiteSpace(userId))
-            return Unauthorized(new { message = "X-User-Id header is required." });
+            return Unauthorized(new { message = "JWT preferred_username claim is required." });
 
         if (string.IsNullOrWhiteSpace(request?.NewsId))
             return BadRequest(new { message = "newsId is required." });
@@ -54,6 +57,11 @@ public class ViewsController : ControllerBase
             NewsId = newsId,
             ViewCount = count
         });
+    }
+
+    private string? GetCurrentUserId()
+    {
+        return User.FindFirstValue("preferred_username");
     }
 }
 
