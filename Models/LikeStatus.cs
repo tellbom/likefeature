@@ -17,7 +17,8 @@ public enum RetryTarget
 public class RetryMessage
 {
     public string MessageId { get; set; } = Guid.NewGuid().ToString();
-    public LikeEvent Event { get; set; } = new();
+    public LikeEvent? Event { get; set; }
+    public ViewEvent? ViewEvent { get; set; }
     public RetryTarget Target { get; set; }
     public int AttemptCount { get; set; }
     public DateTime NextAttemptAtUtc { get; set; } = DateTime.UtcNow;

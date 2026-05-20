@@ -85,6 +85,9 @@ builder.Services.AddScoped<IRedisLikeStateStore, RedisLikeStateStore>();
 builder.Services.AddScoped<IClickHouseLikeEventWriter, ClickHouseLikeEventWriter>();
 builder.Services.AddScoped<IElasticsearchLikeQueryStore, ElasticsearchLikeQueryStore>();
 builder.Services.AddScoped<ILikeService, LikeService>();
+builder.Services.AddScoped<IRedisViewStore, RedisViewStore>();
+builder.Services.AddScoped<IClickHouseViewEventWriter, ClickHouseViewEventWriter>();
+builder.Services.AddScoped<IViewService, ViewService>();
 
 // 后台补偿 Worker（C2 修复：取消注释）
 builder.Services.AddHostedService<LikeSyncRetryWorker>();

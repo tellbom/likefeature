@@ -20,9 +20,9 @@ public class LikeSyncRetryWorker : BackgroundService
         ILogger<LikeSyncRetryWorker> logger,
         IConfiguration config)
     {
-        _queue         = queue;
-        _scopeFactory  = scopeFactory;
-        _logger        = logger;
+        _queue = queue;
+        _scopeFactory = scopeFactory;
+        _logger = logger;
         _maxRetryCount = config.GetValue<int>("LikeSync:MaxRetryCount", 10);
     }
 
@@ -42,7 +42,6 @@ public class LikeSyncRetryWorker : BackgroundService
                 break;
             }
 
-            // R2 修复：未到期直接重新入队，不 Delay 阻塞消费者
             if (message.NextAttemptAtUtc > DateTime.UtcNow)
             {
                 await _queue.EnqueueAsync(message);
@@ -51,19 +50,19 @@ public class LikeSyncRetryWorker : BackgroundService
                 continue;
             }
 
-            await ProcessAsync(message, stoppingToken);
+            await ProcessAsync(message);
         }
 
         _logger.LogInformation("LikeSyncRetryWorker stopped.");
     }
 
-    private async Task ProcessAsync(RetryMessage message, CancellationToken stoppingToken)
+    private async Task ProcessAsync(RetryMessage message)
     {
         if (message.AttemptCount >= _maxRetryCount)
         {
             _logger.LogError(
-                "Dead-letter: max retries reached. target={Target} newsId={NewsId} messageId={MessageId}",
-                message.Target, message.Event.NewsId, message.MessageId);
+                "Dead-letter: max retries reached. target={Target} messageId={MessageId}",
+                message.Target, message.MessageId);
             return;
         }
 
@@ -74,46 +73,71 @@ public class LikeSyncRetryWorker : BackgroundService
             switch (message.Target)
             {
                 case RetryTarget.ClickHouse:
-                    var chWriter = scope.ServiceProvider
-                        .GetRequiredService<IClickHouseLikeEventWriter>();
-                    await chWriter.AppendAsync(message.Event);
+                    await HandleClickHouseAsync(scope, message);
                     break;
 
                 case RetryTarget.Elasticsearch:
-                    var esStore = scope.ServiceProvider
-                        .GetRequiredService<IElasticsearchLikeQueryStore>();
-                    // A1：优先从 Redis 读最新 count，降级用 RetryMessage 快照值
-                    var redisStore = scope.ServiceProvider
-                        .GetRequiredService<IRedisLikeStateStore>();
-                    long latestCount;
-                    try
-                    {
-                        latestCount = await redisStore.GetCountAsync(message.Event.NewsId);
-                    }
-                    catch
-                    {
-                        latestCount = message.LikeCount;
-                    }
-                    await esStore.UpsertAsync(message.Event.NewsId, latestCount);
+                    await HandleElasticsearchAsync(scope, message);
                     break;
             }
 
             _logger.LogInformation(
-                "Retry success: target={Target} newsId={NewsId} attempt={Attempt}",
-                message.Target, message.Event.NewsId, message.AttemptCount + 1);
+                "Retry success: target={Target} messageId={MessageId} attempt={Attempt}",
+                message.Target, message.MessageId, message.AttemptCount + 1);
         }
         catch (Exception ex)
         {
             message.AttemptCount++;
-            message.LastError        = ex.Message;
-            var backoffSeconds       = Math.Min(5 * Math.Pow(2, message.AttemptCount - 1), 300);
+            message.LastError = ex.Message;
+            var backoffSeconds = Math.Min(5 * Math.Pow(2, message.AttemptCount - 1), 300);
             message.NextAttemptAtUtc = DateTime.UtcNow.AddSeconds(backoffSeconds);
 
             _logger.LogWarning(ex,
-                "Retry failed, re-enqueuing: target={Target} newsId={NewsId} attempt={Attempt} nextIn={Backoff}s",
-                message.Target, message.Event.NewsId, message.AttemptCount, backoffSeconds);
+                "Retry failed, re-enqueuing: target={Target} messageId={MessageId} attempt={Attempt} nextIn={Backoff}s",
+                message.Target, message.MessageId, message.AttemptCount, backoffSeconds);
 
             await _queue.EnqueueAsync(message);
         }
+    }
+
+    private static async Task HandleClickHouseAsync(AsyncServiceScope scope, RetryMessage message)
+    {
+        if (message.ViewEvent is not null)
+        {
+            var viewWriter = scope.ServiceProvider
+                .GetRequiredService<IClickHouseViewEventWriter>();
+            await viewWriter.AppendAsync(message.ViewEvent);
+            return;
+        }
+
+        if (message.Event is not null)
+        {
+            var likeWriter = scope.ServiceProvider
+                .GetRequiredService<IClickHouseLikeEventWriter>();
+            await likeWriter.AppendAsync(message.Event);
+        }
+    }
+
+    private static async Task HandleElasticsearchAsync(AsyncServiceScope scope, RetryMessage message)
+    {
+        if (message.Event is null) return;
+
+        var esStore = scope.ServiceProvider
+            .GetRequiredService<IElasticsearchLikeQueryStore>();
+        // A1：优先从 Redis 读最新 count，降级用 RetryMessage 快照值
+        var redisStore = scope.ServiceProvider
+            .GetRequiredService<IRedisLikeStateStore>();
+
+        long latestCount;
+        try
+        {
+            latestCount = await redisStore.GetCountAsync(message.Event.NewsId);
+        }
+        catch
+        {
+            latestCount = message.LikeCount;
+        }
+
+        await esStore.UpsertAsync(message.Event.NewsId, latestCount);
     }
 }
