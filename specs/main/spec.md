@@ -6,7 +6,7 @@
 - Q: Redis 中的点赞/取消切换应如何保证原子性？ -> A: 使用 Redis Lua 脚本原子完成状态判断、写入和计数更新
 - Q: ClickHouse 的 insert-only 历史表应记录哪种事件模型？ -> A: 每次 toggle 插入一条事件，事件类型为 Liked 或 Unliked
 - Q: Redis toggle 成功后，如果 ClickHouse 或 ES 写入/同步暂时失败，接口应如何处理？ -> A: 返回成功；失败的 ClickHouse/ES 写入进入可靠重试/补偿队列
-- Q: 点赞接口中的用户 ID 应由哪里提供？ -> A: 开发阶段使用请求头中的用户 ID，后续接入 JWT 校验
+- Q: 点赞接口中的用户 ID 应由哪里提供？ -> A: 使用 JWT Bearer 认证，从 Token 的 subject claim 获取用户 ID
 
 ## 功能描述
 1. 用户对每篇新闻点赞，每个工号只能点赞一次。
@@ -20,7 +20,7 @@
 - 点赞/取消切换必须通过 Redis Lua 脚本原子完成状态判断、用户点赞集合写入和点赞计数更新。
 - ClickHouse 仅允许 insert-only 写操作；每次 toggle 必须追加一条事件，事件类型为 `Liked` 或 `Unliked`。
 - Redis toggle 成功后接口即可返回成功；ClickHouse/ES 写入或同步失败时，必须进入可靠重试/补偿队列。
-- 开发阶段用户 ID 从请求头读取；后续接入 JWT 后，用户 ID 改为从认证上下文/Token Claim 获取。
+- 用户 ID 从 JWT 认证上下文的 subject claim 获取。
 - 前端不在本项目范围内；本项目只提供后端 HTTP API，供其他前端项目调用。
 - 微服务 API 命名与返回格式必须遵循规范：
   - POST /api/likes/toggle

@@ -21,6 +21,10 @@ Add service configuration to `appsettings.Development.json`:
   },
   "Elasticsearch": {
     "Uri": "http://localhost:9200"
+  },
+  "Jwt": {
+    "Authority": "https://your-sso-host",
+    "RequireHttpsMetadata": false
   }
 }
 ```
@@ -41,7 +45,7 @@ Toggle a like:
 ```powershell
 Invoke-RestMethod -Method Post `
   -Uri http://localhost:5000/api/likes/toggle `
-  -Headers @{ "X-User-Id" = "user-001" } `
+  -Headers @{ "Authorization" = "Bearer <jwt-with-sub-user-001>" } `
   -ContentType "application/json" `
   -Body '{ "newsId": "news-001" }'
 ```
@@ -51,7 +55,7 @@ Check status:
 ```powershell
 Invoke-RestMethod -Method Get `
   -Uri "http://localhost:5000/api/likes/status?newsId=news-001" `
-  -Headers @{ "X-User-Id" = "user-001" }
+  -Headers @{ "Authorization" = "Bearer <jwt-with-sub-user-001>" }
 ```
 
 Check count:

@@ -43,9 +43,9 @@
 
 ## Phase 3: User Story 1 - Toggle Like State (Priority: P1) MVP
 
-**Goal**: External frontend projects can call `POST /api/likes/toggle` to like or cancel like for a news item using `X-User-Id`.
+**Goal**: External frontend projects can call `POST /api/likes/toggle` to like or cancel like for a news item using a JWT Bearer token.
 
-**Independent Test**: Send two toggle requests with the same `X-User-Id` and `newsId`; first returns `liked: true` and `Liked`, second returns `liked: false` and `Unliked`, with non-negative count.
+**Independent Test**: Send two toggle requests with the same JWT subject and `newsId`; first returns `liked: true` and `Liked`, second returns `liked: false` and `Unliked`, with non-negative count.
 
 ### Tests for User Story 1
 
@@ -60,7 +60,7 @@
 - [ ] T024 [US1] Implement retry queue enqueue behavior for ClickHouse/ES failures in `Services/LikeSyncRetryQueue.cs`
 - [ ] T025 [US1] Implement toggle orchestration in `Services/LikeService.cs`
 - [ ] T026 [US1] Implement `POST /api/likes/toggle` in `Controllers/LikesController.cs`
-- [ ] T027 [US1] Add request header validation for `X-User-Id` and request body validation for `newsId` in `Controllers/LikesController.cs`
+- [ ] T027 [US1] Add JWT authorization and request body validation for `newsId` in `Controllers/LikesController.cs`
 
 **Checkpoint**: MVP toggle flow works independently and does not require frontend code.
 
@@ -68,9 +68,9 @@
 
 ## Phase 4: User Story 2 - Query User Like Status (Priority: P2)
 
-**Goal**: External frontend projects can call `GET /api/likes/status` to know whether the current development user liked a news item.
+**Goal**: External frontend projects can call `GET /api/likes/status` to know whether the authenticated user liked a news item.
 
-**Independent Test**: Toggle a news item once, then call status with the same `X-User-Id` and `newsId`; response returns `liked: true`.
+**Independent Test**: Toggle a news item once, then call status with the same JWT subject and `newsId`; response returns `liked: true`.
 
 ### Tests for User Story 2
 
@@ -83,7 +83,7 @@
 - [ ] T031 [US2] Implement Redis membership status lookup in `Services/RedisLikeStateStore.cs`
 - [ ] T032 [US2] Implement status orchestration in `Services/LikeService.cs`
 - [ ] T033 [US2] Implement `GET /api/likes/status` in `Controllers/LikesController.cs`
-- [ ] T034 [US2] Add query validation for `newsId` and header validation for `X-User-Id` in `Controllers/LikesController.cs`
+- [ ] T034 [US2] Add query validation for `newsId` and JWT authorization in `Controllers/LikesController.cs`
 
 **Checkpoint**: Status query works independently for API consumers.
 

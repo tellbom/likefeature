@@ -16,7 +16,7 @@
 **Target Platform**: Server-side ASP.NET Core Web API consumed by external frontend projects  
 **Project Type**: Web service / microservice  
 **Performance Goals**: Toggle API should complete from Redis path without waiting for ClickHouse/ES persistence; Redis Lua path should be suitable for high-concurrency requests  
-**Constraints**: Redis is the authoritative current state; ClickHouse writes are insert-only; ES is derived from async sync; development-stage user ID comes from request header; JWT claim extraction is deferred  
+**Constraints**: Redis is the authoritative current state; ClickHouse writes are insert-only; ES is derived from async sync; user ID comes from the authenticated JWT subject claim  
 **Scale/Scope**: Single backend like microservice with three public endpoints and internal retry/sync workers; no frontend implementation in this repository
 
 ## Constitution Check

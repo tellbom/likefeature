@@ -35,10 +35,10 @@ Alternatives considered:
 - Require Redis, ClickHouse, and ES all to succeed: rejected because downstream storage outages would block the main user action.
 - Ignore downstream failures: rejected because it loses audit/query consistency.
 
-## Decision: User ID comes from request header during development
+## Decision: User ID comes from JWT subject claim
 
-Rationale: The current feature is scoped before JWT integration. A required header lets services and tests implement user-specific behavior now while keeping the future JWT migration explicit.
+Rationale: JWT Bearer authentication keeps identity out of request payloads and development-only headers. The likes service uses the authenticated token subject as the stable user ID while preserving the existing service contracts.
 
 Alternatives considered:
 - Request body user ID: rejected because it leaks identity into command payloads.
-- Token claim now: deferred until JWT integration is available.
+- Request header user ID: rejected because it bypasses standard authentication.

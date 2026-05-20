@@ -174,7 +174,7 @@ const formatDate = (dateStr: string) => {
 const fetchLikeState = async (newsId: string | number) => {
     try {
         // TODO: 替换为真实 API
-        // GET /api/likes/status?newsId=xxx  Header: X-User-Id
+        // GET /api/likes/status?newsId=xxx  Header: Authorization: Bearer <token>
         // GET /api/likes/count?newsId=xxx
 
         // Mock：模拟从接口拿到初始状态
@@ -193,7 +193,7 @@ const handleLikeToggle = async (newsId: string | number) => {
 
     try {
         // TODO: 替换为真实 API
-        // POST /api/likes/toggle  Header: X-User-Id  Body: { newsId }
+        // POST /api/likes/toggle  Header: Authorization: Bearer <token>  Body: { newsId }
         // 接口返回 { success, liked, likeCount, eventType }
 
         // Mock：模拟接口延迟

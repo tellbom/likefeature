@@ -1,6 +1,9 @@
 using likefeature.Models;
 using likefeature.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace likefeature.Controllers;
 
@@ -19,15 +22,16 @@ public class LikesController : ControllerBase
 
     /// <summary>
     /// POST /api/likes/toggle
-    /// Header: X-User-Id (required)
+    /// Authorization: Bearer JWT (required)
     /// Body:   { "newsId": "..." }
     /// </summary>
+    [Authorize]
     [HttpPost("toggle")]
     public async Task<IActionResult> Toggle([FromBody] ToggleRequest request)
     {
-        var userId = Request.Headers["X-User-Id"].FirstOrDefault();
+        var userId = GetCurrentUserId();
         if (string.IsNullOrWhiteSpace(userId))
-            return Unauthorized(new { message = "X-User-Id header is required." });
+            return Unauthorized(new { message = "JWT subject claim is required." });
 
         if (string.IsNullOrWhiteSpace(request?.NewsId))
             return BadRequest(new { message = "newsId is required." });
@@ -48,14 +52,15 @@ public class LikesController : ControllerBase
 
     /// <summary>
     /// GET /api/likes/status?newsId=...
-    /// Header: X-User-Id (required)
+    /// Authorization: Bearer JWT (required)
     /// </summary>
+    [Authorize]
     [HttpGet("status")]
     public async Task<IActionResult> Status([FromQuery] string newsId)
     {
-        var userId = Request.Headers["X-User-Id"].FirstOrDefault();
+        var userId = GetCurrentUserId();
         if (string.IsNullOrWhiteSpace(userId))
-            return Unauthorized(new { message = "X-User-Id header is required." });
+            return Unauthorized(new { message = "JWT subject claim is required." });
 
         if (string.IsNullOrWhiteSpace(newsId))
             return BadRequest(new { message = "newsId is required." });
@@ -87,6 +92,15 @@ public class LikesController : ControllerBase
             NewsId    = newsId,
             LikeCount = count
         });
+    }
+
+    private string? GetCurrentUserId()
+    {
+        return User.FindFirstValue("userId")
+            ?? User.FindFirstValue("userid")
+            ?? User.FindFirstValue("uid")
+            ?? User.FindFirstValue(JwtRegisteredClaimNames.Sub)
+            ?? User.FindFirstValue(ClaimTypes.NameIdentifier);
     }
 }
 
