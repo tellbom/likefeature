@@ -38,15 +38,10 @@ public class RedisLikeStateStore : IRedisLikeStateStore
             userId   = (RedisValue) userId
         });
 
-        // N1 修复：校验返回结果形态再转型
-        if (raw.IsNull || raw.Type != ResultType.MultiBulk)
+        var result = (RedisResult[]?) raw;
+        if (result is null || result.Length < 2)
             throw new InvalidOperationException(
-                $"Redis toggle script returned unexpected result type: {raw.Type}");
-
-        var result = (RedisResult[]) raw;
-        if (result.Length < 2)
-            throw new InvalidOperationException(
-                $"Redis toggle script returned {result.Length} elements, expected 2.");
+                $"Redis toggle script returned {result?.Length ?? 0} elements, expected 2.");
 
         var liked     = (long) result[0] == 1;
         var likeCount = (long) result[1];
@@ -68,6 +63,22 @@ public class RedisLikeStateStore : IRedisLikeStateStore
     {
         var value = await _db.StringGetAsync(CountKey(newsId));
         return value.HasValue ? (long) value : 0;
+    }
+
+    public async Task RestoreLikedUsersAsync(string newsId, IReadOnlyCollection<string> userIds)
+    {
+        var usersKey = UsersKey(newsId);
+        var countKey = CountKey(newsId);
+
+        await _db.KeyDeleteAsync(usersKey);
+
+        if (userIds.Count > 0)
+        {
+            var values = userIds.Select(userId => (RedisValue) userId).ToArray();
+            await _db.SetAddAsync(usersKey, values);
+        }
+
+        await _db.StringSetAsync(countKey, userIds.Count);
     }
 
     private static string UsersKey(string newsId) => $"likes:users:{newsId}";

@@ -25,4 +25,6 @@ public interface IRedisLikeStateStore
     /// 查询新闻当前点赞数。
     /// </summary>
     Task<long> GetCountAsync(string newsId);
+
+    Task RestoreLikedUsersAsync(string newsId, IReadOnlyCollection<string> userIds);
 }

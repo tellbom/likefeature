@@ -54,6 +54,22 @@ public class RedisViewStore : IRedisViewStore
         return value.HasValue ? (long) value : 0;
     }
 
+    public async Task RestoreViewedUsersAsync(string newsId, IReadOnlyCollection<string> userIds)
+    {
+        var usersKey = UsersKey(newsId);
+        var countKey = CountKey(newsId);
+
+        await _db.KeyDeleteAsync(usersKey);
+
+        if (userIds.Count > 0)
+        {
+            var values = userIds.Select(userId => (RedisValue) userId).ToArray();
+            await _db.SetAddAsync(usersKey, values);
+        }
+
+        await _db.StringSetAsync(countKey, userIds.Count);
+    }
+
     private static string UsersKey(string newsId) => $"views:users:{newsId}";
     private static string CountKey(string newsId) => $"views:count:{newsId}";
 }

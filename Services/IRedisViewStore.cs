@@ -11,4 +11,6 @@ public interface IRedisViewStore
     Task<RedisViewResult> RecordAsync(string userId, string newsId);
 
     Task<long> GetCountAsync(string newsId);
+
+    Task RestoreViewedUsersAsync(string newsId, IReadOnlyCollection<string> userIds);
 }
